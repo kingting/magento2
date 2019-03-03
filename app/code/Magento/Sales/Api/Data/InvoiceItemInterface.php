@@ -1,18 +1,20 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Sales\Api\Data;
+
+use Magento\Framework\Api\ExtensibleDataInterface;
 
 /**
  * Invoice item interface.
  *
  * An invoice is a record of the receipt of payment for an order. An invoice item is a purchased item in an invoice.
  * @api
+ * @since 100.0.2
  */
-interface InvoiceItemInterface extends \Magento\Sales\Api\Data\InvoiceItemCreationInterface,
-\Magento\Framework\Api\ExtensibleDataInterface
+interface InvoiceItemInterface extends ExtensibleDataInterface, LineItemInterface
 {
     /**#@+
      * Constants for keys of data array. Identical to the name of the getter in snake case.

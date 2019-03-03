@@ -1,8 +1,11 @@
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 
+/**
+ * @api
+ */
 define([
     'underscore',
     'uiRegistry',
@@ -23,13 +26,17 @@ define([
         update: function (value) {
             var country = registry.get(this.parentName + '.' + 'country_id'),
                 options = country.indexedOptions,
-                option;
+                option = null;
 
             if (!value) {
                 return;
             }
 
             option = options[value];
+
+            if (!option) {
+                return;
+            }
 
             if (option['is_zipcode_optional']) {
                 this.error(false);

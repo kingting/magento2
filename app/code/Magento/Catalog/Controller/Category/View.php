@@ -1,20 +1,26 @@
 <?php
 /**
  *
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Catalog\Controller\Category;
 
+use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\Layer\Resolver;
+use Magento\Catalog\Model\Product\ProductList\ToolbarMemorizer;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\Action\Action;
 
 /**
+ * View a category on storefront. Needs to be accessible by POST because of the store switching.
+ *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class View extends \Magento\Framework\App\Action\Action
+class View extends Action implements HttpGetActionInterface, HttpPostActionInterface
 {
     /**
      * Core registry
@@ -70,6 +76,11 @@ class View extends \Magento\Framework\App\Action\Action
     protected $categoryRepository;
 
     /**
+     * @var ToolbarMemorizer
+     */
+    private $toolbarMemorizer;
+
+    /**
      * Constructor
      *
      * @param \Magento\Framework\App\Action\Context $context
@@ -82,6 +93,7 @@ class View extends \Magento\Framework\App\Action\Action
      * @param \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory
      * @param Resolver $layerResolver
      * @param CategoryRepositoryInterface $categoryRepository
+     * @param ToolbarMemorizer|null $toolbarMemorizer
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -94,7 +106,8 @@ class View extends \Magento\Framework\App\Action\Action
         PageFactory $resultPageFactory,
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
         Resolver $layerResolver,
-        CategoryRepositoryInterface $categoryRepository
+        CategoryRepositoryInterface $categoryRepository,
+        ToolbarMemorizer $toolbarMemorizer = null
     ) {
         parent::__construct($context);
         $this->_storeManager = $storeManager;
@@ -106,12 +119,13 @@ class View extends \Magento\Framework\App\Action\Action
         $this->resultForwardFactory = $resultForwardFactory;
         $this->layerResolver = $layerResolver;
         $this->categoryRepository = $categoryRepository;
+        $this->toolbarMemorizer = $toolbarMemorizer ?: $context->getObjectManager()->get(ToolbarMemorizer::class);
     }
 
     /**
      * Initialize requested category object
      *
-     * @return \Magento\Catalog\Model\Category
+     * @return \Magento\Catalog\Model\Category|bool
      */
     protected function _initCategory()
     {
@@ -130,6 +144,7 @@ class View extends \Magento\Framework\App\Action\Action
         }
         $this->_catalogSession->setLastVisitedCategoryId($category->getId());
         $this->_coreRegistry->register('current_category', $category);
+        $this->toolbarMemorizer->memorizeParams();
         try {
             $this->_eventManager->dispatch(
                 'catalog_controller_category_init_after',
@@ -183,16 +198,17 @@ class View extends \Magento\Framework\App\Action\Action
             if (!$hasChildren) {
                 // Two levels removed from parent.  Need to add default page type.
                 $parentType = strtok($type, '_');
-                $page->addPageLayoutHandles(['type' => $parentType]);
+                $page->addPageLayoutHandles(['type' => $parentType], null, false);
             }
-            $page->addPageLayoutHandles(['type' => $type, 'id' => $category->getId()]);
+            $page->addPageLayoutHandles(['type' => $type], null, false);
+            $page->addPageLayoutHandles(['id' => $category->getId()]);
 
             // apply custom layout update once layout is loaded
             $layoutUpdates = $settings->getLayoutUpdates();
             if ($layoutUpdates && is_array($layoutUpdates)) {
                 foreach ($layoutUpdates as $layoutUpdate) {
                     $page->addUpdate($layoutUpdate);
-                    $page->addPageLayoutHandles(['layout_update' => md5($layoutUpdate)]);
+                    $page->addPageLayoutHandles(['layout_update' => sha1($layoutUpdate)], null, false);
                 }
             }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Customer\Block\Adminhtml\Edit\Tab\View;
@@ -12,6 +12,9 @@ use Magento\Directory\Model\Currency;
  * Adminhtml customer cart items grid block
  *
  * @SuppressWarnings(PHPMD.LongVariable)
+ *
+ * @api
+ * @since 100.0.2
  */
 class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
 {
@@ -68,7 +71,7 @@ class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function _construct()
     {
@@ -91,7 +94,7 @@ class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
         $quote = $this->getQuote();
 
         if ($quote) {
-            $collection = $quote->getItemsCollection(false);
+            $collection = $quote->getItemsCollection(true);
         } else {
             $collection = $this->_dataCollectionFactory->create();
         }
@@ -103,7 +106,7 @@ class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function _prepareColumns()
     {
@@ -141,7 +144,7 @@ class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRowUrl($row)
     {
@@ -149,7 +152,7 @@ class Cart extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getHeadersVisibility()
     {
